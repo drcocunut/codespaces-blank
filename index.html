@@ -1,1 +1,455 @@
 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Digital Store</title>
+    <style>
+        body {
+            margin: 0;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+        nav {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: #0071e3;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s ease;
+        }
+        nav a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+        }
+
+        .store {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .product {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .price {
+            color: #0071e3;
+            margin-top: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 1rem;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            position: relative;
+            text-align: center;
+        }
+        .close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 1.2rem;
+            color: #888;
+            cursor: pointer;
+        }
+        .btn {
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.6rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #005bb5;
+        }
+        .paypal-info {
+            text-align: left;
+            background: #f2f2f7;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #1d1d1f;
+        }
+        .paypal-info strong {
+            font-weight: 600;
+        }
+
+        /* Warenkorb-spezifisches Styling */
+        .cart-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0071e3;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 99;
+        }
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 0.3em 0.6em;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .cart-items {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: red;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
+        .cart-total {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#" onclick="openModal('youtubeModal')">YouTube</a>
+        <a href="#" onclick="openModal('spotifyModal')">Spotify</a>
+        <a href="#" onclick="openModal('discordModal')">Discord</a>
+        <a href="#" onclick="openModal('minecraftModal')">Minecraft</a>
+        <a href="#" onclick="openModal('fortniteModal')">Fortnite</a>
+        <a href="#" onclick="openModal('gamesModal')">Games</a>
+    </nav>
+
+    <div class="modal" id="youtubeModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('youtubeModal')">&times;</span>
+            <h2>YouTube Premium</h2>
+            <div class="store">
+                <div class="card" data-product="YouTube Premium 1 Monat" data-price="4,99 €">
+                    <div class="product">1 Monat</div><div class="price">4,99 €</div>
+                </div>
+                <div class="card" data-product="YouTube Premium 12 Monate" data-price="24,99 €">
+                    <div class="product">12 Monate</div><div class="price">24,99 €</div>
+                </div>
+                <div class="card" data-product="YouTube Premium 24 Monate" data-price="44,99 €">
+                    <div class="product">24 Monate</div><div class="price">44,99 €</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="spotifyModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('spotifyModal')">&times;</span>
+            <h2>Spotify</h2>
+            <div class="store">
+                <div class="card" data-product="Spotify 1 Monat" data-price="2,99 €">
+                    <div class="product">1 Monat</div><div class="price">2,99 €</div>
+                </div>
+                <div class="card" data-product="Spotify 3 Monate" data-price="6,99 €">
+                    <div class="product">3 Monate</div><div class="price">6,99 €</div>
+                </div>
+                <div class="card" data-product="Spotify 12 Monate" data-price="24,99 €">
+                    <div class="product">12 Monate</div><div class="price">24,99 €</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="discordModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('discordModal')">&times;</span>
+            <h2>Discord</h2>
+            <div class="store">
+                <div class="card" data-product="Discord Nitro 3 Monate" data-price="5,99 €">
+                    <div class="product">Nitro 3 Monate</div><div class="price">5,99 €</div>
+                </div>
+                <div class="card" data-product="Discord Server Boost" data-price="4,50 €">
+                    <div class="product">Server Boost</div><div class="price">4,50 €</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="minecraftModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('minecraftModal')">&times;</span>
+            <h2>Minecraft</h2>
+            <div class="store">
+                <div class="card" data-product="Minecraft Java & Bedrock" data-price="9,99 €">
+                    <div class="product">Java & Bedrock</div><div class="price">9,99 €</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="fortniteModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('fortniteModal')">&times;</span>
+            <h2>Fortnite</h2>
+            <div class="store">
+                <div class="card" data-product="Fortnite V-Bucks 1000" data-price="7,99 €">
+                    <div class="product">1000 V-Bucks</div><div class="price">7,99 €</div>
+                </div>
+                <div class="card" data-product="Fortnite V-Bucks 2800" data-price="19,99 €">
+                    <div class="product">2800 V-Bucks</div><div class="price">19,99 €</div>
+                </div>
+                <div class="card" data-product="Fortnite V-Bucks 5000" data-price="31,99 €">
+                    <div class="product">5000 V-Bucks</div><div class="price">31,99 €</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="gamesModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('gamesModal')">&times;</span>
+            <h2>Games</h2>
+            <div class="store">
+                <div class="card" data-product="FC25 Steam Account" data-price="20,99 €">
+                    <div class="product">FC25 Steam Account</div><div class="price">20,99 €</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="productDetailsModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('productDetailsModal')">&times;</span>
+            <h2>Produkt Details</h2>
+            <p id="product-modal-details">...</p>
+            <button class="btn btn-primary" id="addToCartBtn">Zum Warenkorb hinzufügen</button>
+        </div>
+    </div>
+
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('cartModal')">&times;</span>
+            <h2>Dein Warenkorb</h2>
+            <ul id="cart-items" class="cart-items">
+                </ul>
+            <div class="cart-total">
+                Gesamtsumme: <span id="cart-total-price">0,00 €</span>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('paypalModal')">Zur Kasse gehen</button>
+        </div>
+    </div>
+
+    <div class="modal" id="paypalModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('paypalModal')">&times;</span>
+            <h2>Zahlung via PayPal</h2>
+            <div class="paypal-info">
+                <p><strong>PayPal-Mail:</strong><br>fi_scholz@icloud.com</p>
+                <p><strong>Zahlungsart:</strong><br>Freunde & Familie</p>
+                <p><strong>Nachricht:</strong><br><em>Bitte gib hier deinen Discord-Namen an</em></p>
+                <p>Wenn du bezahlt hast, klicke auf "Ticket öffnen", um deine Bestellung abzuschließen.</p>
+            </div>
+            <button class="btn btn-primary" onclick="window.open('https://discord.gg/e4trsJ7Qqd', '_blank'); closeModal('paypalModal');">Ticket öffnen</button>
+        </div>
+    </div>
+
+    <div class="cart-icon" onclick="openCart()">
+        🛒 <span class="cart-count" id="cart-count">0</span>
+    </div>
+
+    <script>
+        const cards = document.querySelectorAll('.card');
+        const productModalDetails = document.getElementById('product-modal-details');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const cartItemsList = document.getElementById('cart-items');
+        const cartTotalPrice = document.getElementById('cart-total-price');
+        const cartCount = document.getElementById('cart-count');
+
+        let cart = [];
+        let selectedProduct = {};
+
+        // Beim Laden der Seite das Fortnite-Modal öffnen
+        document.addEventListener('DOMContentLoaded', () => {
+            openModal('fortniteModal');
+        });
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const product = card.dataset.product;
+                const price = card.dataset.price;
+                
+                selectedProduct = { product, price };
+                
+                productModalDetails.innerText = `${product} für ${price}`;
+                openModal('productDetailsModal');
+            });
+        });
+
+        // Funktion zum Hinzufügen zum Warenkorb
+        addToCartBtn.addEventListener('click', () => {
+            if (selectedProduct.product && selectedProduct.price) {
+                addToCart(selectedProduct.product, selectedProduct.price);
+                closeModal('productDetailsModal');
+            }
+        });
+
+        function addToCart(productName, productPrice) {
+            // Preis in eine Zahl umwandeln (Komma durch Punkt ersetzen für parseFloat)
+            const priceValue = parseFloat(productPrice.replace(',', '.'));
+
+            const existingItemIndex = cart.findIndex(item => item.name === productName);
+
+            if (existingItemIndex > -1) {
+                cart[existingItemIndex].quantity++;
+            } else {
+                cart.push({ name: productName, price: priceValue, quantity: 1 });
+            }
+            updateCartDisplay();
+            updateCartCount();
+        }
+
+        function removeFromCart(productName) {
+            cart = cart.filter(item => item.name !== productName);
+            updateCartDisplay();
+            updateCartCount();
+        }
+
+        function updateCartDisplay() {
+            cartItemsList.innerHTML = ''; // Warenkorb leeren
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartItemsList.innerHTML = '<li>Dein Warenkorb ist leer.</li>';
+            } else {
+                cart.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('cart-item');
+                    listItem.innerHTML = `
+                        <span>${item.name} (${item.quantity}x)</span>
+                        <span>${item.price.toFixed(2).replace('.', ',')} € 
+                            <button class="cart-item-remove" onclick="removeFromCart('${item.name}')">&times;
+                            </button>
+                        </span>
+                    `;
+                    cartItemsList.appendChild(listItem);
+                    total += item.price * item.quantity;
+                });
+            }
+            cartTotalPrice.innerText = total.toFixed(2).replace('.', ',') + ' €';
+        }
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.innerText = totalItems;
+        }
+
+        function openModal(id) {
+            // Alle offenen Modals schließen, bevor ein neues geöffnet wird
+            document.querySelectorAll('.modal.show').forEach(modal => {
+                modal.classList.remove('show');
+            });
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function openCart() {
+            updateCartDisplay(); // Sicherstellen, dass der Warenkorb aktualisiert ist
+            openModal('cartModal');
+        }
+
+        // Modals schließen, wenn außerhalb geklickt wird
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        };
+    </script>
+
+</body>
+</html>
